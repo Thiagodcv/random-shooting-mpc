@@ -43,7 +43,7 @@ class MPC:
         # Sample actions
         action_seqs = np.random.binomial(n=1, p=0.5, size=(self.num_traj, self.horizon, 1))  # cartpole
 
-        # Evaluate action sequences
+        # Evaluate action sequences TODO: Calculate return for each trajectory in parallel.
         rets = np.zeros(self.num_traj)
         for seq in range(self.num_traj):
             state = np.copy(state0)
