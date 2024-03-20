@@ -124,6 +124,9 @@ class MBRLLearner:
         loss.backward()
         self.optimizer.step()
 
+        # TODO: if do-mpc is being used, need to refresh onnx model after model updates
+        self.policy.regen_onnx_model()
+
     def eval_model(self):
 
         o, _ = self.env.reset()

@@ -1,4 +1,6 @@
 import numpy as np
+import do_mpc
+import torch.onnx
 
 
 class MPC:
@@ -30,6 +32,10 @@ class MPC:
         self.terminate = terminate
         self.past_actions = []
 
+        # TODO
+        self.onnx_model = None
+        self.regen_onnx_model()
+
     def random_shooting(self, state0):
         """
         Parameters
@@ -59,6 +65,36 @@ class MPC:
         opt_action = action_seqs[opt_seq_idx, 0, :]
         self.append_past_action(opt_action)
         return opt_action
+
+    def do_mpc(self, state0):
+        """
+        TODO
+        Parameters
+        ----------
+        state0: np.array
+
+        Return
+        ------
+        np.array: The first action in the optimal sequence of actions.
+        """
+        model_type = 'discrete'
+        model = do_mpc.model.Model(model_type)
+
+        state_var = model.set_variable(var_type='_x', var_name='state', shape=state0.shape)
+        action_var = model.set_variable(var_type='_u', var_name='action', shape=1)
+
+        next_state = 0  # self.model.forward_np(state_var, action_var)
+
+        pass
+
+    def regen_onnx_model(self):
+        """
+        TODO
+        Regenerate ONNX format of the dynamics model.
+        """
+        dummy_input = torch.rand(5)
+        onnx_program = torch.onnx.dynamo_export(self.model, dummy_input)
+        self.onnx_model = do_mpc.sysid.ONNXConversion(onnx_program)
 
     def append_past_action(self, action):
         """
