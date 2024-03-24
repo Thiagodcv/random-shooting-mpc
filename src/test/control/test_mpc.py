@@ -8,7 +8,9 @@ import torch
 import os
 
 import do_mpc
+import casadi
 import onnx
+import math
 
 
 class TestMPC(TestCase):
@@ -122,22 +124,24 @@ class TestMPC(TestCase):
 
     def test_onnx_functionality(self):
 
-        state_dim = 4
+        state_dim = 3
         action_dim = 1
         model = DynamicsModel(state_dim, action_dim)
-        model.load_state_dict(torch.load(os.path.join(MODELS_PATH, "demo.pt")))
+        model.load_state_dict(torch.load(os.path.join(MODELS_PATH, "pend_demo.pt")))
 
-        x = torch.ones(1, 4).float()
+        x = torch.ones(1, 3).float()
         u = torch.ones(1, 1).float()
 
         torch.onnx.export(model,
                           args=(x, u),
                           f="../../../models/onnx/model.onnx",
                           export_params=True,
-                          input_names=["s_norm, a_norm"],
-                          output_names=["s_next_norm"])
+                          input_names=["x", "u"],
+                          output_names=["next_x"])
 
     def test_do_mpc_setup(self):
+
+        # 1. Get dynamics model
         dynamics = onnx.load("../../../models/onnx/model.onnx")
         onnx.checker.check_model(dynamics)
 
@@ -146,7 +150,46 @@ class TestMPC(TestCase):
         model = do_mpc.model.Model(model_type, 'SX')
 
         # Define states and inputs
-        _x = model.set_variable(var_type='_x', var_name='x', shape=(1, 4))
-        _u = model.set_variable(var_type='_u', var_name='u', shape=(1, 1))
+        x = model.set_variable(var_type='_x', var_name='state', shape=(3, 1))
+        u = model.set_variable(var_type='_u', var_name='action', shape=(1, 1))
+
+        casadi_converter = do_mpc.sysid.ONNXConversion(dynamics)
+        casadi_converter.convert(x=x.T, u=u.T)
+        x_next = casadi_converter['next_x']
+
+        model.set_rhs('state', x_next)
+        model.setup()
+
+        # 2. Get MPC
+        mpc = do_mpc.controller.MPC(model)
+
+        mpc.settings.n_horizon = 20
+        mpc.settings.t_step = 1.0
+        mpc.settings.supress_ipopt_output()
+
+        def cost(x, u):
+            x = x[0]
+            y = x[1]
+            rot_x = np.cos(-np.pi / 2) * x - np.sin(-np.pi / 2) * y
+            rot_y = np.sin(-np.pi / 2) * x + np.cos(-np.pi / 2) * y
+            theta = math.atan2(rot_y, rot_x)
+            d_theta = x[2]
+
+            torque = u
+            return theta ** 2 + 0.1 * d_theta ** 2 + 0.001 * torque ** 2
+
+        l = cost(model.x['state'], model.u['action'])
+        mpc.set_objective(lterm=l)
+
+        mpc.bounds['lower', '_u', 'input'] = -2
+        mpc.bounds['upper', '_u', 'input'] = 2
+
+        mpc.setup()
+
+
+
+
+
+
 
 

@@ -81,9 +81,10 @@ class MPC:
         model_type = 'discrete'
         model = do_mpc.model.Model(model_type)
 
-        state_var = model.set_variable(var_type='_x', var_name='state', shape=state0.shape)
-        action_var = model.set_variable(var_type='_u', var_name='action', shape=1)
+        x = model.set_variable(var_type='_x', var_name='state', shape=(3, 1))
+        u = model.set_variable(var_type='_u', var_name='action', shape=(1, 1))
 
+        casadi_converter = do_mpc.sysid.ONNXConversion(self.onnx_model)
         next_state = 0  # self.model.forward_np(state_var, action_var)
 
         pass
