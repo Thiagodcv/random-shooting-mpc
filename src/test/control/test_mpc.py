@@ -127,11 +127,26 @@ class TestMPC(TestCase):
         model = DynamicsModel(state_dim, action_dim)
         model.load_state_dict(torch.load(os.path.join(MODELS_PATH, "demo.pt")))
 
+        x = torch.ones(1, 4).float()
+        u = torch.ones(1, 1).float()
+
         torch.onnx.export(model,
-                          args=torch.rand(5),
+                          args=(x, u),
                           f="../../../models/onnx/model.onnx",
                           export_params=True,
-                          input_names=["s_a"],
-                          output_names=["s_next"])
+                          input_names=["s_norm, a_norm"],
+                          output_names=["s_next_norm"])
 
-        onnx_model = onnx.load("../../../models/onnx/model.onnx")
+    def test_do_mpc_setup(self):
+        dynamics = onnx.load("../../../models/onnx/model.onnx")
+        onnx.checker.check_model(dynamics)
+
+        # Define model type
+        model_type = "discrete"
+        model = do_mpc.model.Model(model_type, 'SX')
+
+        # Define states and inputs
+        _x = model.set_variable(var_type='_x', var_name='x', shape=(1, 4))
+        _u = model.set_variable(var_type='_u', var_name='u', shape=(1, 1))
+
+

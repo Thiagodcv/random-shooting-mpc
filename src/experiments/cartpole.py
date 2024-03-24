@@ -14,7 +14,7 @@ def cartpole():
     episode_len = 200
     env = gym.make("CartPole-v1", render_mode="human")
     model = DynamicsModel(state_dim, action_dim, normalize=True)
-    model.load_state_dict(torch.load(os.path.join(MODELS_PATH, "test_normalize.pt")))
+    model.load_state_dict(torch.load(os.path.join(MODELS_PATH, "demo.pt")))
 
     def reward(state, action):
         return 1
@@ -31,7 +31,7 @@ def cartpole():
 
     num_traj = 30
     gamma = 0.999
-    horizon = 15
+    horizon = 20
     mpc = MPC(model, num_traj, gamma, horizon, reward, terminate)
 
     MBRLLearner.static_eval_model(env, episode_len, mpc, gamma)

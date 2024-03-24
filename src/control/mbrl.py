@@ -116,10 +116,11 @@ class MBRLLearner:
         Update the dynamics model using sampled (s,a,s'-s) triplets stored in replay_buffer.
         """
         state, action, d_state = self.replay_buffer.sample(self.batch_size)
-        input = torch.from_numpy(np.concatenate((state, action), axis=1)).float().to(self.device)
+        # input = torch.from_numpy(np.concatenate((state, action), axis=1)).float().to(self.device)
         target = torch.from_numpy(d_state).float().to(self.device)
         self.optimizer.zero_grad()
-        output = self.model(input)
+        output = self.model(torch.from_numpy(state).float().to(self.device),
+                            torch.from_numpy(action).float().to(self.device))
         loss = self.loss(output, target)
         loss.backward()
         self.optimizer.step()

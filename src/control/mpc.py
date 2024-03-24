@@ -34,7 +34,7 @@ class MPC:
 
         # TODO
         self.onnx_model = None
-        self.regen_onnx_model()
+        # self.regen_onnx_model()
 
     def random_shooting(self, state0):
         """
@@ -93,8 +93,8 @@ class MPC:
         Regenerate ONNX format of the dynamics model.
         """
         dummy_input = torch.rand(5)
-        onnx_program = torch.onnx.dynamo_export(self.model, dummy_input)
-        self.onnx_model = do_mpc.sysid.ONNXConversion(onnx_program)
+        # onnx_program = torch.onnx.dynamo_export(self.model, dummy_input)
+        # self.onnx_model = do_mpc.sysid.ONNXConversion(onnx_program)
 
     def append_past_action(self, action):
         """

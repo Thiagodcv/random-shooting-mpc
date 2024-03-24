@@ -34,18 +34,30 @@ class DynamicsModel(nn.Module):
             nn.Linear(256, state_dim)
         )
 
-    def forward(self, x):
+    def forward(self, s, a):
+        """
+        Parameters
+        ----------
+        s: torch.Tensor
+            Normalized state
+        a: torch.Tensor
+            Normalized action
+        """
+        x = torch.cat((s, a), dim=1)
         output = self.linear_relu_stack(x)
         return output
 
     def forward_np(self, state, action):
         if self.normalize:
             n_state, n_action = self.normalize_state_action(state, action)
-            x = np.concatenate((n_state, n_action))
-            x_torch = torch.from_numpy(x).float()
-            n_next_state = self.forward(x_torch).detach().numpy() + n_state
+            # x = np.concatenate((n_state, n_action))
+            # x_torch = torch.from_numpy(x).float()
+            s = torch.from_numpy(n_state).float()[None, :]
+            a = torch.from_numpy(n_action).float()[None, :]
+            n_next_state = self.forward(s, a).detach().numpy().flatten() + n_state
             output = self.denormalize_state(n_next_state)
         else:
+            # TODO: Make non-normalized version compatible with new forward() implementation
             x = np.concatenate((state, action))
             x_torch = torch.from_numpy(x).float()
             output = self.forward(x_torch).detach().numpy() + state
