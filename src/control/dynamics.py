@@ -50,17 +50,14 @@ class DynamicsModel(nn.Module):
     def forward_np(self, state, action):
         if self.normalize:
             n_state, n_action = self.normalize_state_action(state, action)
-            # x = np.concatenate((n_state, n_action))
-            # x_torch = torch.from_numpy(x).float()
             s = torch.from_numpy(n_state).float()[None, :]
             a = torch.from_numpy(n_action).float()[None, :]
             n_next_state = self.forward(s, a).detach().numpy().flatten() + n_state
             output = self.denormalize_state(n_next_state)
         else:
-            # TODO: Make non-normalized version compatible with new forward() implementation
-            x = np.concatenate((state, action))
-            x_torch = torch.from_numpy(x).float()
-            output = self.forward(x_torch).detach().numpy() + state
+            s = torch.from_numpy(state).float()[None, :]
+            a = torch.from_numpy(action).float()[None, :]
+            output = self.forward(s, a).detach().numpy().flatten() + state
 
         return output
 

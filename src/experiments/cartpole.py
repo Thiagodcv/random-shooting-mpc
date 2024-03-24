@@ -13,8 +13,8 @@ def cartpole():
     action_dim = 1
     episode_len = 200
     env = gym.make("CartPole-v1", render_mode="human")
-    model = DynamicsModel(state_dim, action_dim, normalize=True)
-    model.load_state_dict(torch.load(os.path.join(MODELS_PATH, "demo.pt")))
+    model = DynamicsModel(state_dim, action_dim, normalize=False)
+    model.load_state_dict(torch.load(os.path.join(MODELS_PATH, "demo1.pt")))
 
     def reward(state, action):
         return 1
