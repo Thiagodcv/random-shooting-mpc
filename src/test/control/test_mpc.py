@@ -7,6 +7,9 @@ import numpy as np
 import torch
 import os
 
+import do_mpc
+import onnx
+
 
 class TestMPC(TestCase):
 
@@ -116,3 +119,19 @@ class TestMPC(TestCase):
         state_dummy = np.zeros(state_dim)
         for i in range(100):
             print("action: ", mpc.random_shooting(state_dummy))
+
+    def test_onnx_functionality(self):
+
+        state_dim = 4
+        action_dim = 1
+        model = DynamicsModel(state_dim, action_dim)
+        model.load_state_dict(torch.load(os.path.join(MODELS_PATH, "demo.pt")))
+
+        torch.onnx.export(model,
+                          args=torch.rand(5),
+                          f="../../../models/onnx/model.onnx",
+                          export_params=True,
+                          input_names=["s_a"],
+                          output_names=["s_next"])
+
+        onnx_model = onnx.load("../../../models/onnx/model.onnx")
