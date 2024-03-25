@@ -78,7 +78,7 @@ class TestMBRL(TestCase):
         """
         Test to see if can run an example without crashing.
         """
-        state_dim = 3
+        state_dim = 2
         action_dim = 1
         env = gym.make("Pendulum-v1")
         num_episodes = 2000
@@ -86,19 +86,18 @@ class TestMBRL(TestCase):
         batch_size = 256
         train_buffer_len = num_episodes  # Right now have it set to only supervised learning
 
-        def reward(state, action):
-            x = state[0]
-            y = state[1]
-            rot_x = np.cos(-np.pi/2) * x - np.sin(-np.pi/2) * y
-            rot_y = np.sin(-np.pi/2) * x + np.cos(-np.pi/2) * y
-            theta = math.atan2(rot_y, rot_x)
-            d_theta = state[2]
+        def angle_normalize(x):
+            return ((x + np.pi) % (2 * np.pi)) - np.pi
 
-            torque = action
-            return -(theta**2 + 0.1*d_theta**2 + 0.001*torque**2)
+        def reward(state, action):
+            th = state[0]
+            thdot = state[1]
+            u = action
+            return - (angle_normalize(th) ** 2 + 0.1 * thdot ** 2 + 0.001 * (u ** 2))
 
         learner = MBRLLearner(state_dim=state_dim, action_dim=action_dim, env=env,
                               num_episodes=num_episodes, episode_len=episode_len, reward=reward,
                               terminate=None, batch_size=batch_size, train_buffer_len=train_buffer_len,
                               save_name="pend_demo", normalize=False)
         learner.train()
+

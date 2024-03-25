@@ -93,7 +93,7 @@ class MBRLLearner:
                 if ep > self.train_buffer_len:
                     action = self.policy.random_shooting(o)
                 else:
-                    action = np.random.uniform(low=-2, high=2, size=(1,))  # Pendulum
+                    action = np.random.uniform(low=-20, high=20, size=(1,))  # Pendulum
                     # action = np.random.binomial(n=1, p=0.5, size=(1,))  # Cartpole
 
                 next_o, reward, terminated, truncated, _ = self.env.step(action)

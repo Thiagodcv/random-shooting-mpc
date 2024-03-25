@@ -48,7 +48,7 @@ class MPC:
         """
         # Sample actions
         # action_seqs = np.random.binomial(n=1, p=0.5, size=(self.num_traj, self.horizon, 1))  # cartpole
-        action_seqs = np.random.uniform(low=-2, high=2, size=(self.num_traj, self.horizon, 1))  # pendulum
+        action_seqs = np.random.uniform(low=-20, high=20, size=(self.num_traj, self.horizon, 1))  # pendulum
 
         # Evaluate action sequences TODO: Calculate return for each trajectory in parallel.
         rets = np.zeros(self.num_traj)
