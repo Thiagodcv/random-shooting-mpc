@@ -124,12 +124,12 @@ class TestMPC(TestCase):
 
     def test_onnx_functionality(self):
 
-        state_dim = 3
+        state_dim = 2
         action_dim = 1
         model = DynamicsModel(state_dim, action_dim)
         model.load_state_dict(torch.load(os.path.join(MODELS_PATH, "pend_demo.pt")))
 
-        x = torch.ones(1, 3).float()
+        x = torch.ones(1, 2).float()
         u = torch.ones(1, 1).float()
 
         torch.onnx.export(model,
