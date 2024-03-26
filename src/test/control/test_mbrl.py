@@ -98,6 +98,6 @@ class TestMBRL(TestCase):
         learner = MBRLLearner(state_dim=state_dim, action_dim=action_dim, env=env,
                               num_episodes=num_episodes, episode_len=episode_len, reward=reward,
                               terminate=None, batch_size=batch_size, train_buffer_len=train_buffer_len,
-                              save_name="pend_demo", normalize=True)
+                              save_name="pend_demo", normalize=False)
         learner.train()
 

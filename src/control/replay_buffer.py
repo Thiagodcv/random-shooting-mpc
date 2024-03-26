@@ -50,7 +50,7 @@ class ReplayBuffer:
             n_state, n_action, d_n_state = self.normalize_tuple(state, action, next_state, batch_size)
             return n_state, n_action, d_n_state
 
-        return state, action, next_state - state
+        return state, action, next_state  # - state
 
     def normalize_tuple(self, state, action, next_state, batch_size):
         """

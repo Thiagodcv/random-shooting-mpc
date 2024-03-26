@@ -26,12 +26,18 @@ class DynamicsModel(nn.Module):
         self.action_mean = nn.Parameter(torch.zeros(action_dim), requires_grad=False)
         self.normalize = normalize
 
-        self.linear_relu_stack = nn.Sequential(
-            nn.Linear(state_dim + action_dim, 256),
-            nn.ReLU(),
-            nn.Linear(256, 256),
-            nn.ReLU(),
-            nn.Linear(256, state_dim)
+        # self.linear_relu_stack = nn.Sequential(
+        #     nn.Linear(state_dim + action_dim, 256),
+        #     nn.ReLU(),
+        #     nn.Linear(256, 256),
+        #     nn.ReLU(),
+        #     nn.Linear(256, state_dim)
+        # )
+
+        self.linear_tanh_stack = nn.Sequential(
+            nn.Linear(state_dim + action_dim, 32),
+            nn.Tanh(),
+            nn.Linear(32, state_dim)
         )
 
     def forward(self, s, a):
@@ -44,7 +50,8 @@ class DynamicsModel(nn.Module):
             Normalized action
         """
         x = torch.cat((s, a), dim=1)
-        output = self.linear_relu_stack(x)
+        # output = self.linear_relu_stack(x)
+        output = self.linear_tanh_stack(x)
         return output
 
     def forward_np(self, state, action):
@@ -57,7 +64,7 @@ class DynamicsModel(nn.Module):
         else:
             s = torch.from_numpy(state).float()[None, :]
             a = torch.from_numpy(action).float()[None, :]
-            output = self.forward(s, a).detach().numpy().flatten() + state
+            output = self.forward(s, a).detach().numpy().flatten()  # + state
 
         return output
 
